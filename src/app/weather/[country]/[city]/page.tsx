@@ -1,0 +1,313 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { allCities, getCitiesByCountry, getCityByCountryAndSlug, getNearbyCities } from "@/lib/cities";
+import { africanCountries, getISOFromFlag, getTimezone } from "@/lib/countries";
+import {
+  fetchWeather,
+  getCurrentWeather,
+  getHourlyForecast,
+  getDailyForecast,
+  getWeatherGradient,
+  getDayDetails,
+  getGraphData,
+} from "@/lib/weather";
+import { CurrentWeather } from "@/components/weather/current-weather";
+import { ForecastTabs } from "@/components/weather/forecast-tabs";
+import { CityGrid } from "@/components/weather/city-grid";
+
+export const revalidate = 1800; // 30 minutes
+
+export function generateStaticParams() {
+  return allCities.map((city) => ({
+    country: city.country,
+    city: city.slug,
+  }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ country: string; city: string }>;
+}): Promise<Metadata> {
+  const { country: countrySlug, city: citySlug } = await params;
+  const city = getCityByCountryAndSlug(countrySlug, citySlug);
+  if (!city) return { title: "City Not Found" };
+
+  const country = africanCountries.find((c) => c.slug === countrySlug);
+  const countryName = country?.name || city.countryName;
+
+  let description = `Current weather in ${city.name}, ${countryName}. Hourly and 7-day forecast updated every 30 minutes.`;
+  let temp = "";
+
+  try {
+    const data = await fetchWeather(city.latitude, city.longitude);
+    const current = getCurrentWeather(data);
+    if (current) {
+      temp = `${current.temperature}°C`;
+      description = `Weather in ${city.name} right now: ${current.temperature}°C, ${current.description}. Hourly and 7-day forecast for ${city.name}, ${countryName}.`;
+    }
+  } catch {}
+
+  return {
+    title: `${city.name} Weather${temp ? ` ${temp}` : ""} — Today's Forecast`,
+    description,
+    alternates: { canonical: `/weather/${countrySlug}/${city.slug}` },
+    openGraph: {
+      title: `Weather in ${city.name}, ${countryName}${temp ? ` — ${temp}` : ""}`,
+      description,
+      type: "website",
+      siteName: "AfriWeather",
+      images: [{ url: "/og-image.jpeg", width: 2048, height: 1152, alt: `Weather in ${city.name}, ${countryName}` }],
+    },
+  };
+}
+
+export default async function CityWeatherPage({
+  params,
+}: {
+  params: Promise<{ country: string; city: string }>;
+}) {
+  const { country: countrySlug, city: citySlug } = await params;
+  const city = getCityByCountryAndSlug(countrySlug, citySlug);
+  if (!city) notFound();
+
+  const country = africanCountries.find((c) => c.slug === countrySlug);
+  const countryName = country?.name || city.countryName;
+
+  const tz = getTimezone(countrySlug);
+  const data = await fetchWeather(city.latitude, city.longitude);
+  const current = getCurrentWeather(data);
+  const hourly = getHourlyForecast(data, 24, tz);
+  const daily = getDailyForecast(data, tz);
+  const dayDetails = getDayDetails(data, tz);
+  const graphData = getGraphData(data, tz);
+  const nearby = getNearbyCities(city, 8);
+
+  if (!current) notFound();
+
+  const gradient = getWeatherGradient(current.symbolCode, current.temperature);
+
+  // Structured Data — FAQPage
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `What is the weather in ${city.name} today?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `The current temperature in ${city.name} is ${current.temperature}°C with ${current.description.toLowerCase()}. Humidity is at ${current.humidity}% and wind speed is ${current.windSpeed} km/h from the ${getWindDir(current.windDirection)}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What is the weather forecast for ${city.name} this week?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `This week in ${city.name}: ${daily
+            .map((d) => `${d.dayName}: ${d.tempMin}°C to ${d.tempMax}°C`)
+            .join(". ")}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What is the temperature in ${city.name} right now?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `The temperature in ${city.name}, ${countryName} is currently ${current.temperature}°C (feels like ${current.feelsLike}°C). Today's high is ${daily[0]?.tempMax}°C and the low is ${daily[0]?.tempMin}°C.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Does it rain in ${city.name} today?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            daily[0]?.precipitation > 0
+              ? `Yes, ${daily[0].precipitation}mm of rain is expected in ${city.name} today.`
+              : `No significant rainfall is expected in ${city.name} today.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What is the humidity in ${city.name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `The current humidity in ${city.name} is ${current.humidity}%. The atmospheric pressure is ${current.pressure} hPa.`,
+        },
+      },
+    ],
+  };
+
+  // Structured Data — BreadcrumbList
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://afriweather.com" },
+      { "@type": "ListItem", position: 2, name: countryName, item: `https://afriweather.com/${countrySlug}` },
+      { "@type": "ListItem", position: 3, name: city.name, item: `https://afriweather.com/weather/${countrySlug}/${city.slug}` },
+    ],
+  };
+
+  // Structured Data — Place
+  const placeSchema = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name: `${city.name}, ${countryName}`,
+    geo: { "@type": "GeoCoordinates", latitude: city.latitude, longitude: city.longitude },
+    address: { "@type": "PostalAddress", addressRegion: city.province || "", addressCountry: country ? getISOFromFlag(country.flag) : "" },
+  };
+
+  return (
+    <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([faqSchema, breadcrumbSchema, placeSchema]),
+        }}
+      />
+
+      {/* Atmospheric hero */}
+      <section
+        className={`atmosphere grain relative bg-gradient-to-br ${gradient} overflow-hidden`}
+      >
+        <div className="absolute top-[-20%] left-[10%] w-[500px] h-[500px] rounded-full bg-white/[0.03] blur-3xl pointer-events-none" />
+        <div className="absolute bottom-[-30%] right-[-5%] w-[400px] h-[400px] rounded-full bg-black/[0.08] blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-8 sm:pt-8 sm:pb-12 md:pt-8 md:pb-14">
+          <CurrentWeather {...current} cityName={city.name} countryName={countryName} timezone={getTimezone(countrySlug)} />
+        </div>
+      </section>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-10">
+        <ForecastTabs
+          daily={daily}
+          hourly={hourly}
+          dayDetails={dayDetails}
+          graphData={graphData}
+          cityName={city.name}
+          lat={city.latitude}
+          lon={city.longitude}
+        />
+
+        {/* About section */}
+        <section>
+          <h2 className="text-[17px] font-bold text-[var(--text-primary)] mb-4">
+            Weather in {city.name} Today
+          </h2>
+          <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5 sm:p-6 space-y-4">
+            <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
+              {city.name} is located in {city.province || countryName}, {countryName} at
+              coordinates {Math.abs(city.latitude).toFixed(2)}°{city.latitude < 0 ? "S" : "N"},{" "}
+              {Math.abs(city.longitude).toFixed(2)}°{city.longitude < 0 ? "W" : "E"}. Right now the weather
+              shows {current.description.toLowerCase()} with a temperature of{" "}
+              {current.temperature}°C, feeling like {current.feelsLike}°C.
+            </p>
+            <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
+              Today&apos;s forecast for {city.name} shows temperatures from{" "}
+              {daily[0]?.tempMin}°C to {daily[0]?.tempMax}°C. Humidity is at{" "}
+              {current.humidity}% with winds blowing at {current.windSpeed} km/h.
+              Atmospheric pressure is {current.pressure} hPa with{" "}
+              {current.cloudCover}% cloud cover.
+            </p>
+            <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
+              Looking ahead, {daily[1]?.dayName || "tomorrow"} will see
+              temperatures between {daily[1]?.tempMin}°C and{" "}
+              {daily[1]?.tempMax}°C
+              {daily[1]?.precipitation > 0
+                ? ` with ${daily[1].precipitation}mm of expected rainfall`
+                : " with no significant rainfall expected"}
+              .
+            </p>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section>
+          <h2 className="text-[17px] font-bold text-[var(--text-primary)] mb-4">
+            {city.name} Weather FAQ
+          </h2>
+          <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
+            {faqSchema.mainEntity.map(
+              (
+                item: { name: string; acceptedAnswer: { text: string } },
+                i: number
+              ) => (
+                <details
+                  key={i}
+                  className={`group ${
+                    i !== faqSchema.mainEntity.length - 1
+                      ? "border-b border-[var(--border-subtle)]"
+                      : ""
+                  }`}
+                >
+                  <summary className="px-5 py-4 text-[14px] font-semibold text-[var(--text-primary)] cursor-pointer flex items-center justify-between gap-4 hover:bg-gray-50/50 active:bg-gray-50 transition-colors touch-manipulation">
+                    <span>{item.name}</span>
+                    <svg
+                      className="faq-chevron w-4 h-4 text-[var(--text-tertiary)] shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </summary>
+                  <div className="px-5 pb-4">
+                    <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
+                      {item.acceptedAnswer.text}
+                    </p>
+                  </div>
+                </details>
+              )
+            )}
+          </div>
+        </section>
+
+        {/* Nearby Cities */}
+        <CityGrid
+          cities={nearby}
+          title={`Weather Near ${city.name}`}
+          showProvince
+        />
+
+        {/* Breadcrumb nav */}
+        <nav
+          className="flex items-center gap-2 text-[13px] text-[var(--text-tertiary)] pt-4 border-t border-[var(--border-subtle)]"
+          aria-label="Breadcrumb"
+        >
+          <Link href="/" className="hover:text-[var(--text-primary)] transition-colors">
+            Home
+          </Link>
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <Link href={`/${countrySlug}`} className="hover:text-[var(--text-primary)] transition-colors">
+            {countryName}
+          </Link>
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          <span className="text-[var(--text-primary)] font-medium">
+            {city.name}
+          </span>
+        </nav>
+      </div>
+    </div>
+  );
+}
+
+function getWindDir(degrees: number): string {
+  const directions = [
+    "north", "northeast", "east", "southeast",
+    "south", "southwest", "west", "northwest",
+  ];
+  return directions[Math.round(degrees / 45) % 8];
+}

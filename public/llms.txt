@@ -1,0 +1,46 @@
+# AfriWeather
+
+> Accurate weather forecasts for 54 African countries and 5,900+ cities. Free, ad-free, updated every 30 minutes.
+
+AfriWeather provides current conditions, hourly forecasts, and 7-day forecasts for cities across all 54 African countries. Weather data is sourced from MET Norway (Norwegian Meteorological Institute), licensed under CC BY 4.0, and refreshed every 30 minutes.
+
+## URL Structure
+
+- Homepage: https://afriweather.com
+- Country page: https://afriweather.com/{country-slug}
+  Example: https://afriweather.com/south-africa
+- City weather page: https://afriweather.com/weather/{country-slug}/{city-slug}
+  Example: https://afriweather.com/weather/south-africa/cape-town
+
+## Coverage
+
+### Countries (54)
+
+Southern Africa: South Africa, Botswana, Zimbabwe, Mozambique, Zambia, Malawi, Namibia, Lesotho, Eswatini, Madagascar, Mauritius, Comoros, Angola
+
+East Africa: Kenya, Tanzania, Uganda, Ethiopia, Rwanda, Burundi, South Sudan, Somalia, Djibouti, Eritrea, Seychelles
+
+West Africa: Nigeria, Ghana, Senegal, Ivory Coast, Mali, Burkina Faso, Niger, Guinea, Sierra Leone, Liberia, Togo, Benin, Gambia, Guinea-Bissau, Cape Verde, Mauritania
+
+Central Africa: DR Congo, Cameroon, Congo, Gabon, Central African Republic, Chad, Equatorial Guinea, São Tomé and Príncipe
+
+North Africa: Egypt, Morocco, Algeria, Tunisia, Libya, Sudan
+
+### Major Cities
+
+Cape Town, Johannesburg, Durban, Pretoria, Port Elizabeth, Lagos, Abuja, Nairobi, Mombasa, Cairo, Alexandria, Casablanca, Accra, Addis Ababa, Dar es Salaam, Kampala, Kigali, Dakar, Kinshasa, Luanda, Maputo, Harare, Lusaka, Windhoek, Gaborone, Tunis, Algiers, Tripoli, Khartoum, Mogadishu
+
+## Weather Data Available
+
+For each city:
+- Current conditions: temperature, feels like, humidity, wind speed and direction, pressure, cloud cover, weather description
+- Hourly forecast: 24+ hours with temperature, precipitation, and weather symbol
+- 7-day forecast: daily high/low temperatures, precipitation amounts, wind speeds, weather conditions by period (night, morning, afternoon, evening)
+
+## Data Source
+
+All weather data is provided by MET Norway (Norwegian Meteorological Institute) via their free Locationforecast API. Data is licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+
+## Contact
+
+Website: https://afriweather.com

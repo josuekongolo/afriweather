@@ -1,0 +1,151 @@
+# AfriWeather — Complete Reference
+
+> Accurate weather forecasts for 54 African countries and 5,900+ cities. Free, ad-free, updated every 30 minutes.
+
+## About
+
+AfriWeather is a free, ad-free weather forecast service focused exclusively on Africa. It provides current conditions, hourly forecasts, and 7-day forecasts for cities across all 54 African countries. The service is designed to be fast, mobile-friendly, and accessible to all Africans.
+
+Weather data is sourced from MET Norway (Norwegian Meteorological Institute) via their Locationforecast 2.0 API, licensed under Creative Commons Attribution 4.0 International (CC BY 4.0). Data is refreshed every 30 minutes via Incremental Static Regeneration.
+
+## URL Structure
+
+- Homepage: https://afriweather.com
+- Country hub page: https://afriweather.com/{country-slug}
+- City weather page: https://afriweather.com/weather/{country-slug}/{city-slug}
+- Sitemap: https://afriweather.com/sitemap.xml
+
+### Examples
+
+- South Africa hub: https://afriweather.com/south-africa
+- Cape Town weather: https://afriweather.com/weather/south-africa/cape-town
+- Lagos weather: https://afriweather.com/weather/nigeria/lagos
+- Nairobi weather: https://afriweather.com/weather/kenya/nairobi
+- Cairo weather: https://afriweather.com/weather/egypt/cairo
+
+## Coverage by Region
+
+### Southern Africa (13 countries)
+| Country | Capital | Slug |
+|---------|---------|------|
+| South Africa | Pretoria | south-africa |
+| Botswana | Gaborone | botswana |
+| Zimbabwe | Harare | zimbabwe |
+| Mozambique | Maputo | mozambique |
+| Zambia | Lusaka | zambia |
+| Malawi | Lilongwe | malawi |
+| Namibia | Windhoek | namibia |
+| Lesotho | Maseru | lesotho |
+| Eswatini | Mbabane | eswatini |
+| Madagascar | Antananarivo | madagascar |
+| Mauritius | Port Louis | mauritius |
+| Comoros | Moroni | comoros |
+| Angola | Luanda | angola |
+
+### East Africa (11 countries)
+| Country | Capital | Slug |
+|---------|---------|------|
+| Kenya | Nairobi | kenya |
+| Tanzania | Dodoma | tanzania |
+| Uganda | Kampala | uganda |
+| Ethiopia | Addis Ababa | ethiopia |
+| Rwanda | Kigali | rwanda |
+| Burundi | Gitega | burundi |
+| South Sudan | Juba | south-sudan |
+| Somalia | Mogadishu | somalia |
+| Djibouti | Djibouti | djibouti |
+| Eritrea | Asmara | eritrea |
+| Seychelles | Victoria | seychelles |
+
+### West Africa (16 countries)
+| Country | Capital | Slug |
+|---------|---------|------|
+| Nigeria | Abuja | nigeria |
+| Ghana | Accra | ghana |
+| Senegal | Dakar | senegal |
+| Ivory Coast | Yamoussoukro | ivory-coast |
+| Mali | Bamako | mali |
+| Burkina Faso | Ouagadougou | burkina-faso |
+| Niger | Niamey | niger |
+| Guinea | Conakry | guinea |
+| Sierra Leone | Freetown | sierra-leone |
+| Liberia | Monrovia | liberia |
+| Togo | Lome | togo |
+| Benin | Porto-Novo | benin |
+| Gambia | Banjul | gambia |
+| Guinea-Bissau | Bissau | guinea-bissau |
+| Cape Verde | Praia | cape-verde |
+| Mauritania | Nouakchott | mauritania |
+
+### Central Africa (8 countries)
+| Country | Capital | Slug |
+|---------|---------|------|
+| DR Congo | Kinshasa | dr-congo |
+| Cameroon | Yaounde | cameroon |
+| Congo | Brazzaville | congo |
+| Gabon | Libreville | gabon |
+| Central African Republic | Bangui | central-african-republic |
+| Chad | N'Djamena | chad |
+| Equatorial Guinea | Malabo | equatorial-guinea |
+| São Tomé and Príncipe | São Tomé | sao-tome-and-principe |
+
+### North Africa (6 countries)
+| Country | Capital | Slug |
+|---------|---------|------|
+| Egypt | Cairo | egypt |
+| Morocco | Rabat | morocco |
+| Algeria | Algiers | algeria |
+| Tunisia | Tunis | tunisia |
+| Libya | Tripoli | libya |
+| Sudan | Khartoum | sudan |
+
+## Weather Data Fields
+
+### Current Conditions
+- Temperature (°C)
+- Feels like temperature (°C)
+- Humidity (%)
+- Wind speed (km/h) and direction (degrees)
+- Atmospheric pressure (hPa)
+- Cloud cover (%)
+- Weather description (e.g., "Partly Cloudy", "Light Rain")
+- Weather symbol code (from MET Norway)
+- Last updated timestamp
+
+### Hourly Forecast (24+ hours)
+- Temperature (°C)
+- Precipitation (mm)
+- Weather symbol code
+- Hour label
+
+### 7-Day Forecast
+- Day name
+- Date
+- Maximum temperature (°C)
+- Minimum temperature (°C)
+- Precipitation (mm)
+- Weather symbol code
+- Period breakdown: night, morning, afternoon, evening conditions
+- Wind speed (m/s)
+
+## South Africa — Detailed City Coverage
+
+South Africa has the most extensive coverage with 60+ cities across all 9 provinces:
+
+- **Gauteng**: Johannesburg, Pretoria, Soweto, Benoni, Boksburg, Centurion, Krugersdorp, Midrand, Randburg, Roodepoort, Sandton, Springs, Vanderbijlpark, Vereeniging
+- **Western Cape**: Cape Town, Stellenbosch, Paarl, George, Worcester, Bellville, Kraaifontein, Mitchells Plain, Khayelitsha
+- **KwaZulu-Natal**: Durban, Pietermaritzburg, Newcastle, Richards Bay, Pinetown, Chatsworth, Umlazi
+- **Eastern Cape**: Port Elizabeth (Gqeberha), East London, Mthatha, Uitenhage, Queenstown
+- **Free State**: Bloemfontein, Welkom
+- **Mpumalanga**: Nelspruit, Witbank, Middelburg
+- **Limpopo**: Polokwane, Tzaneen, Thohoyandou
+- **North West**: Rustenburg, Mahikeng, Klerksdorp, Potchefstroom
+- **Northern Cape**: Kimberley, Upington
+
+## Data Attribution
+
+Weather data provided by MET Norway (Norwegian Meteorological Institute). Licensed under CC BY 4.0. https://www.met.no/
+
+## Contact
+
+Website: https://afriweather.com

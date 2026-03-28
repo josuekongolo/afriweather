@@ -42,8 +42,8 @@ export const metadata: Metadata = {
     images: ["/og-image.jpeg"],
   },
   icons: {
-    icon: "/afriweather-logo.png",
-    apple: "/afriweather-logo.png",
+    icon: "/icon.jpeg",
+    apple: "/apple-icon.png",
   },
 };
 

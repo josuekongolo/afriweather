@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     const res = await fetch(url.toString(), {
       headers: {
-        "User-Agent": "afriweather/1.0 (https://afriweather.za.com)",
+        "User-Agent": "afriweather/1.0 (https://afriweather.io)",
       },
       next: { revalidate: 86400 }, // cache 24h
     });

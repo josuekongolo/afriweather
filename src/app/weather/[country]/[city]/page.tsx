@@ -19,7 +19,13 @@ import { CityGrid } from "@/components/weather/city-grid";
 export const revalidate = 1800; // 30 minutes
 
 export function generateStaticParams() {
-  return allCities.map((city) => ({
+  // Pre-render top ~200 cities by population to stay within Vercel's output size limit.
+  // All other cities are generated on-demand via ISR and cached after first visit.
+  const topCities = [...allCities]
+    .sort((a, b) => (b.population || 0) - (a.population || 0))
+    .slice(0, 200);
+
+  return topCities.map((city) => ({
     country: city.country,
     city: city.slug,
   }));

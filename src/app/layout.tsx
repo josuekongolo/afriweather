@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   },
   description:
     "Accurate weather forecasts for Africa. Current conditions, hourly and 7-day forecasts for 54 African countries and 5,900+ cities. Free, ad-free, updated every 30 minutes.",
-  metadataBase: new URL("https://afriweather.com"),
+  metadataBase: new URL("https://afriweather.za.com"),
   alternates: {
     canonical: "/",
   },
@@ -63,8 +63,8 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "AfriWeather",
-              url: "https://afriweather.com",
-              logo: "https://afriweather.com/afriweather-logo.png",
+              url: "https://afriweather.za.com",
+              logo: "https://afriweather.za.com/afriweather-logo.png",
               description:
                 "Accurate weather forecasts for Africa. 54 countries, starting with South Africa. Free, ad-free, powered by open data.",
             }),

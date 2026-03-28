@@ -146,9 +146,9 @@ export default async function CityWeatherPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://afriweather.com" },
-      { "@type": "ListItem", position: 2, name: countryName, item: `https://afriweather.com/${countrySlug}` },
-      { "@type": "ListItem", position: 3, name: city.name, item: `https://afriweather.com/weather/${countrySlug}/${city.slug}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://afriweather.za.com" },
+      { "@type": "ListItem", position: 2, name: countryName, item: `https://afriweather.za.com/${countrySlug}` },
+      { "@type": "ListItem", position: 3, name: city.name, item: `https://afriweather.za.com/weather/${countrySlug}/${city.slug}` },
     ],
   };
 

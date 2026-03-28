@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/weather?"],
       },
     ],
-    sitemap: "https://afriweather.com/sitemap.xml",
-    host: "https://afriweather.com",
+    sitemap: "https://afriweather.za.com/sitemap.xml",
+    host: "https://afriweather.za.com",
   };
 }

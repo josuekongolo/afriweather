@@ -91,13 +91,13 @@ export default async function Home() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "AfriWeather",
-    url: "https://afriweather.com",
+    url: "https://afriweather.za.com",
     description: `Accurate weather forecasts for ${totalCountries} African countries and 5,900+ cities. Free, ad-free, updated every 30 minutes.`,
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://afriweather.com/weather?name={search_term_string}",
+        urlTemplate: "https://afriweather.za.com/weather?name={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },

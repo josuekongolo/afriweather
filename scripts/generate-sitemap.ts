@@ -11,7 +11,7 @@ import { resolve } from "path";
 import { allCities } from "../src/lib/cities";
 import { africanCountries } from "../src/lib/countries";
 
-const BASE_URL = "https://afriweather.com";
+const BASE_URL = "https://afriweather.za.com";
 const today = new Date().toISOString().split("T")[0];
 
 interface SitemapEntry {

@@ -57,8 +57,8 @@ export default async function CountryPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://afriweather.com" },
-      { "@type": "ListItem", position: 2, name: `${country.name} Weather`, item: `https://afriweather.com/${country.slug}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://afriweather.za.com" },
+      { "@type": "ListItem", position: 2, name: `${country.name} Weather`, item: `https://afriweather.za.com/${country.slug}` },
     ],
   };
 

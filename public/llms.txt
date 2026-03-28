@@ -6,11 +6,11 @@ AfriWeather provides current conditions, hourly forecasts, and 7-day forecasts f
 
 ## URL Structure
 
-- Homepage: https://afriweather.com
-- Country page: https://afriweather.com/{country-slug}
-  Example: https://afriweather.com/south-africa
-- City weather page: https://afriweather.com/weather/{country-slug}/{city-slug}
-  Example: https://afriweather.com/weather/south-africa/cape-town
+- Homepage: https://afriweather.za.com
+- Country page: https://afriweather.za.com/{country-slug}
+  Example: https://afriweather.za.com/south-africa
+- City weather page: https://afriweather.za.com/weather/{country-slug}/{city-slug}
+  Example: https://afriweather.za.com/weather/south-africa/cape-town
 
 ## Coverage
 
@@ -43,4 +43,4 @@ All weather data is provided by MET Norway (Norwegian Meteorological Institute) 
 
 ## Contact
 
-Website: https://afriweather.com
+Website: https://afriweather.za.com

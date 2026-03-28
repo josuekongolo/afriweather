@@ -10,18 +10,18 @@ Weather data is sourced from MET Norway (Norwegian Meteorological Institute) via
 
 ## URL Structure
 
-- Homepage: https://afriweather.com
-- Country hub page: https://afriweather.com/{country-slug}
-- City weather page: https://afriweather.com/weather/{country-slug}/{city-slug}
-- Sitemap: https://afriweather.com/sitemap.xml
+- Homepage: https://afriweather.za.com
+- Country hub page: https://afriweather.za.com/{country-slug}
+- City weather page: https://afriweather.za.com/weather/{country-slug}/{city-slug}
+- Sitemap: https://afriweather.za.com/sitemap.xml
 
 ### Examples
 
-- South Africa hub: https://afriweather.com/south-africa
-- Cape Town weather: https://afriweather.com/weather/south-africa/cape-town
-- Lagos weather: https://afriweather.com/weather/nigeria/lagos
-- Nairobi weather: https://afriweather.com/weather/kenya/nairobi
-- Cairo weather: https://afriweather.com/weather/egypt/cairo
+- South Africa hub: https://afriweather.za.com/south-africa
+- Cape Town weather: https://afriweather.za.com/weather/south-africa/cape-town
+- Lagos weather: https://afriweather.za.com/weather/nigeria/lagos
+- Nairobi weather: https://afriweather.za.com/weather/kenya/nairobi
+- Cairo weather: https://afriweather.za.com/weather/egypt/cairo
 
 ## Coverage by Region
 
@@ -148,4 +148,4 @@ Weather data provided by MET Norway (Norwegian Meteorological Institute). Licens
 
 ## Contact
 
-Website: https://afriweather.com
+Website: https://afriweather.za.com

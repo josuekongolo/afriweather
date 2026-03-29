@@ -73,7 +73,7 @@ export default async function CountryPage({
       <section className="atmosphere relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
-          style={{ backgroundImage: `url('/countries/${slug}.jpeg')` }}
+          style={{ backgroundImage: `url('/countries/${slug}.webp')` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60 pointer-events-none" />
         <div className="absolute top-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-gradient-to-br from-emerald-300/10 to-transparent blur-3xl pointer-events-none" />

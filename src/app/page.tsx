@@ -114,7 +114,7 @@ export default async function Home() {
       <section className="atmosphere relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
-          style={{ backgroundImage: "url('/hero-bg.jpeg')" }}
+          style={{ backgroundImage: "url('/hero-bg.webp')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0f2847]/70 via-[#0f2847]/50 to-[#0f2847]/80 pointer-events-none" />
         <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-400/10 to-transparent blur-3xl pointer-events-none" />

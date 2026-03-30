@@ -10,6 +10,18 @@ import {
 
 const USER_AGENT = "afriweather/1.0 github.com/afriweather";
 
+const localeMap: Record<string, string> = {
+  en: "en-ZA",
+  fr: "fr-FR",
+  ar: "ar-EG",
+  pt: "pt-PT",
+  sw: "sw-KE",
+};
+
+function getLocaleCode(locale?: string): string {
+  return (locale && localeMap[locale]) || "en-ZA";
+}
+
 export async function fetchWeather(
   lat: number,
   lon: number
@@ -58,15 +70,17 @@ export function getCurrentWeather(data: WeatherData) {
 export function getHourlyForecast(
   data: WeatherData,
   hours = 24,
-  timezone = "Africa/Johannesburg"
+  timezone = "Africa/Johannesburg",
+  locale?: string
 ): HourlyForecast[] {
+  const lc = getLocaleCode(locale);
   const now = new Date();
   return data.properties.timeseries
     .filter((entry) => new Date(entry.time) >= now)
     .slice(0, hours)
     .map((entry) => ({
       time: entry.time,
-      hour: new Date(entry.time).toLocaleTimeString("en-ZA", {
+      hour: new Date(entry.time).toLocaleTimeString(lc, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
@@ -85,7 +99,7 @@ export function getHourlyForecast(
     }));
 }
 
-export function getDailyForecast(data: WeatherData, timezone = "Africa/Johannesburg"): DailyForecast[] {
+export function getDailyForecast(data: WeatherData, timezone = "Africa/Johannesburg", todayLabel = "Today", locale?: string): DailyForecast[] {
   const dailyMap = new Map<
     string,
     { temps: number[]; symbols: string[]; precip: number }
@@ -112,6 +126,7 @@ export function getDailyForecast(data: WeatherData, timezone = "Africa/Johannesb
 
   const days: DailyForecast[] = [];
   const today = new Date().toISOString().split("T")[0];
+  const lc = getLocaleCode(locale);
 
   for (const [date, day] of dailyMap) {
     if (days.length >= 7) break;
@@ -120,8 +135,8 @@ export function getDailyForecast(data: WeatherData, timezone = "Africa/Johannesb
       date,
       dayName:
         date === today
-          ? "Today"
-          : d.toLocaleDateString("en-ZA", {
+          ? todayLabel
+          : d.toLocaleDateString(lc, {
               weekday: "short",
               timeZone: timezone,
             }),
@@ -166,16 +181,18 @@ function computeFeelsLike(temp: number, humidity: number, windMs: number): numbe
   return Math.round(temp);
 }
 
-export function getDetailedHourly(data: WeatherData, timezone = "Africa/Johannesburg"): DetailedHourly[] {
+export function getDetailedHourly(data: WeatherData, timezone = "Africa/Johannesburg", todayLabel = "Today", locale?: string): DetailedHourly[] {
+  const lc = getLocaleCode(locale);
+  const today = new Date().toISOString().split("T")[0];
+
   return data.properties.timeseries.map((entry) => {
     const d = entry.data.instant.details;
     const t = new Date(entry.time);
     const dateStr = entry.time.split("T")[0];
-    const today = new Date().toISOString().split("T")[0];
 
     return {
       time: entry.time,
-      hour: t.toLocaleTimeString("en-ZA", {
+      hour: t.toLocaleTimeString(lc, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
@@ -184,8 +201,8 @@ export function getDetailedHourly(data: WeatherData, timezone = "Africa/Johannes
       date: dateStr,
       dayLabel:
         dateStr === today
-          ? "Today"
-          : t.toLocaleDateString("en-ZA", {
+          ? todayLabel
+          : t.toLocaleDateString(lc, {
               weekday: "long",
               day: "numeric",
               month: "short",
@@ -210,8 +227,8 @@ export function getDetailedHourly(data: WeatherData, timezone = "Africa/Johannes
   });
 }
 
-export function getDayDetails(data: WeatherData, timezone = "Africa/Johannesburg"): DayDetail[] {
-  const detailed = getDetailedHourly(data, timezone);
+export function getDayDetails(data: WeatherData, timezone = "Africa/Johannesburg", todayLabel = "Today", locale?: string): DayDetail[] {
+  const detailed = getDetailedHourly(data, timezone, todayLabel, locale);
   const grouped = new Map<string, DetailedHourly[]>();
 
   for (const h of detailed) {
@@ -252,8 +269,8 @@ export function getDayDetails(data: WeatherData, timezone = "Africa/Johannesburg
   return days;
 }
 
-export function getGraphData(data: WeatherData, timezone = "Africa/Johannesburg"): GraphDataPoint[] {
-  const detailed = getDetailedHourly(data, timezone);
+export function getGraphData(data: WeatherData, timezone = "Africa/Johannesburg", todayLabel = "Today", locale?: string): GraphDataPoint[] {
+  const detailed = getDetailedHourly(data, timezone, todayLabel, locale);
   let prevDate = "";
 
   return detailed.map((h) => {
@@ -272,6 +289,18 @@ export function getGraphData(data: WeatherData, timezone = "Africa/Johannesburg"
       dayLabel: isDayBoundary ? h.dayLabel : undefined,
     };
   });
+}
+
+export function getTranslatedDescription(
+  symbolCode: string,
+  weatherDict?: Record<string, string>
+): string {
+  const base = symbolCode.replace(/_day|_night|_polartwilight/g, "");
+  if (weatherDict) {
+    const key = base === "rain" ? "rain_desc" : base;
+    if (weatherDict[key]) return weatherDict[key];
+  }
+  return getWeatherDescription(symbolCode);
 }
 
 export function getWeatherDescription(symbolCode: string): string {

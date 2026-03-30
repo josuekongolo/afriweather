@@ -37,6 +37,9 @@ export function CurrentWeather({
   const { dict, lang } = useDictionary();
   const emoji = getWeatherEmoji(symbolCode);
   const windDir = getWindDirectionLabel(windDirection);
+  const base = symbolCode.replace(/_day|_night|_polartwilight/g, "");
+  const descKey = base === "rain" ? "rain_desc" : base;
+  const translatedDesc = (dict.weather as Record<string, string>)[descKey] || description;
   const updateTime = new Date(updatedAt).toLocaleTimeString(lang, {
     hour: "2-digit",
     minute: "2-digit",
@@ -69,7 +72,7 @@ export function CurrentWeather({
           </div>
           <div className="flex items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
             <span className="text-base sm:text-lg font-medium text-white/90">
-              {description}
+              {translatedDesc}
             </span>
             <span className="text-[13px] sm:text-sm text-white/40">
               {dict.weather.feelsLike} {feelsLike}°C

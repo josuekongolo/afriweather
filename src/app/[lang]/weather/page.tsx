@@ -9,6 +9,7 @@ import {
   getWeatherGradient,
   getDayDetails,
   getGraphData,
+  getTranslatedDescription,
 } from "@/lib/weather";
 import { CurrentWeather } from "@/components/weather/current-weather";
 import { ForecastTabs } from "@/components/weather/forecast-tabs";
@@ -62,10 +63,10 @@ export default async function WeatherPage({ params, searchParams }: WeatherPageP
 
   const data = await fetchWeather(lat, lon);
   const current = getCurrentWeather(data);
-  const hourly = getHourlyForecast(data);
-  const daily = getDailyForecast(data);
-  const dayDetails = getDayDetails(data);
-  const graphData = getGraphData(data);
+  const hourly = getHourlyForecast(data, 24, undefined, lang);
+  const daily = getDailyForecast(data, undefined, dict.weather.today, lang);
+  const dayDetails = getDayDetails(data, undefined, dict.weather.today, lang);
+  const graphData = getGraphData(data, undefined, dict.weather.today, lang);
 
   if (!current) notFound();
 
@@ -102,7 +103,7 @@ export default async function WeatherPage({ params, searchParams }: WeatherPageP
           <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5 sm:p-6 space-y-4">
             <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
               {placeName} — {Math.abs(lat).toFixed(2)}&deg;{lat < 0 ? "S" : "N"},{" "}
-              {Math.abs(lon).toFixed(2)}&deg;{lon < 0 ? "W" : "E"}. {current.description}, {current.temperature}&deg;C ({dict.weather.feelsLike.toLowerCase()} {current.feelsLike}&deg;C).
+              {Math.abs(lon).toFixed(2)}&deg;{lon < 0 ? "W" : "E"}. {getTranslatedDescription(current.symbolCode, dict.weather as Record<string, string>)}, {current.temperature}&deg;C ({dict.weather.feelsLike.toLowerCase()} {current.feelsLike}&deg;C).
             </p>
           </div>
         </section>

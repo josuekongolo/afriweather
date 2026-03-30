@@ -11,6 +11,7 @@ import {
   getWeatherGradient,
   getDayDetails,
   getGraphData,
+  getTranslatedDescription,
 } from "@/lib/weather";
 import { CurrentWeather } from "@/components/weather/current-weather";
 import { ForecastTabs } from "@/components/weather/forecast-tabs";
@@ -47,7 +48,8 @@ export async function generateMetadata({
     const current = getCurrentWeather(data);
     if (current) {
       temp = `${current.temperature}°C`;
-      description = `${city.name}: ${current.temperature}°C, ${current.description}. ${countryName}.`;
+      const desc = getTranslatedDescription(current.symbolCode, dict.weather as Record<string, string>);
+      description = `${city.name}: ${current.temperature}°C, ${desc}. ${countryName}.`;
     }
   } catch {}
 
@@ -88,15 +90,19 @@ export default async function CityWeatherPage({
   const tz = getTimezone(countrySlug);
   const data = await fetchWeather(city.latitude, city.longitude);
   const current = getCurrentWeather(data);
-  const hourly = getHourlyForecast(data, 24, tz);
-  const daily = getDailyForecast(data, tz);
-  const dayDetails = getDayDetails(data, tz);
-  const graphData = getGraphData(data, tz);
+  const hourly = getHourlyForecast(data, 24, tz, lang);
+  const daily = getDailyForecast(data, tz, dict.weather.today, lang);
+  const dayDetails = getDayDetails(data, tz, dict.weather.today, lang);
+  const graphData = getGraphData(data, tz, dict.weather.today, lang);
   const nearby = getNearbyCities(city, 8);
 
   if (!current) notFound();
 
   const gradient = getWeatherGradient(current.symbolCode, current.temperature);
+
+  const descTranslated = getTranslatedDescription(current.symbolCode, dict.weather as Record<string, string>);
+  const windDirLabel = getWindDir(current.windDirection);
+  const weekForecast = daily.map((d) => `${d.dayName}: ${d.tempMin}°C — ${d.tempMax}°C`).join(". ");
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -104,47 +110,44 @@ export default async function CityWeatherPage({
     mainEntity: [
       {
         "@type": "Question",
-        name: `What is the weather in ${city.name} today?`,
+        name: t(dict.city.faqQ1, { city: city.name }),
         acceptedAnswer: {
           "@type": "Answer",
-          text: `The current temperature in ${city.name} is ${current.temperature}°C with ${current.description.toLowerCase()}. Humidity is at ${current.humidity}% and wind speed is ${current.windSpeed} km/h from the ${getWindDir(current.windDirection)}.`,
+          text: t(dict.city.faqA1, { city: city.name, temp: current.temperature, desc: descTranslated.toLowerCase(), humidity: current.humidity, wind: current.windSpeed, windDir: windDirLabel }),
         },
       },
       {
         "@type": "Question",
-        name: `What is the weather forecast for ${city.name} this week?`,
+        name: t(dict.city.faqQ2, { city: city.name }),
         acceptedAnswer: {
           "@type": "Answer",
-          text: `This week in ${city.name}: ${daily
-            .map((d) => `${d.dayName}: ${d.tempMin}°C to ${d.tempMax}°C`)
-            .join(". ")}.`,
+          text: t(dict.city.faqA2, { city: city.name, weekForecast }),
         },
       },
       {
         "@type": "Question",
-        name: `What is the temperature in ${city.name} right now?`,
+        name: t(dict.city.faqQ3, { city: city.name }),
         acceptedAnswer: {
           "@type": "Answer",
-          text: `The temperature in ${city.name}, ${country?.name || city.countryName} is currently ${current.temperature}°C (feels like ${current.feelsLike}°C). Today's high is ${daily[0]?.tempMax}°C and the low is ${daily[0]?.tempMin}°C.`,
+          text: t(dict.city.faqA3, { city: city.name, country: countryName, temp: current.temperature, feelsLike: current.feelsLike, high: daily[0]?.tempMax ?? "", low: daily[0]?.tempMin ?? "" }),
         },
       },
       {
         "@type": "Question",
-        name: `Does it rain in ${city.name} today?`,
+        name: t(dict.city.faqQ4, { city: city.name }),
         acceptedAnswer: {
           "@type": "Answer",
-          text:
-            daily[0]?.precipitation > 0
-              ? `Yes, ${daily[0].precipitation}mm of rain is expected in ${city.name} today.`
-              : `No significant rainfall is expected in ${city.name} today.`,
+          text: daily[0]?.precipitation > 0
+            ? t(dict.city.faqA4Yes, { amount: daily[0].precipitation, city: city.name })
+            : t(dict.city.faqA4No, { city: city.name }),
         },
       },
       {
         "@type": "Question",
-        name: `What is the humidity in ${city.name}?`,
+        name: t(dict.city.faqQ5, { city: city.name }),
         acceptedAnswer: {
           "@type": "Answer",
-          text: `The current humidity in ${city.name} is ${current.humidity}%. The atmospheric pressure is ${current.pressure} hPa.`,
+          text: t(dict.city.faqA5, { city: city.name, humidity: current.humidity, pressure: current.pressure }),
         },
       },
     ],
@@ -205,13 +208,11 @@ export default async function CityWeatherPage({
           </h2>
           <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5 sm:p-6 space-y-4">
             <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
-              {city.name} — {city.province || countryName}, {countryName}.{" "}
-              {Math.abs(city.latitude).toFixed(2)}°{city.latitude < 0 ? "S" : "N"},{" "}
-              {Math.abs(city.longitude).toFixed(2)}°{city.longitude < 0 ? "W" : "E"}.{" "}
-              {current.description}, {current.temperature}°C ({dict.weather.feelsLike.toLowerCase()} {current.feelsLike}°C).
+              {t(dict.city.locatedIn, { city: city.name, province: city.province || countryName, country: countryName, lat: Math.abs(city.latitude).toFixed(2), latDir: city.latitude < 0 ? "S" : "N", lon: Math.abs(city.longitude).toFixed(2), lonDir: city.longitude < 0 ? "W" : "E" })}{" "}
+              {t(dict.city.currentlyShowing, { desc: descTranslated.toLowerCase(), temp: current.temperature, feelsLike: current.feelsLike })}
             </p>
             <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
-              {daily[0]?.tempMin}°C — {daily[0]?.tempMax}°C. {dict.weather.humidity} {current.humidity}%, {dict.weather.wind.toLowerCase()} {current.windSpeed} km/h. {dict.weather.pressure} {current.pressure} hPa, {dict.weather.cloudCover.toLowerCase()} {current.cloudCover}%.
+              {t(dict.city.todayRange, { city: city.name, min: daily[0]?.tempMin ?? "", max: daily[0]?.tempMax ?? "", humidity: current.humidity, wind: current.windSpeed, pressure: current.pressure, cloud: current.cloudCover })}
             </p>
           </div>
         </section>
@@ -299,4 +300,12 @@ function getWindDir(degrees: number): string {
     "south", "southwest", "west", "northwest",
   ];
   return directions[Math.round(degrees / 45) % 8];
+}
+
+function t(template: string, vars: Record<string, string | number>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replaceAll(`{${key}}`, String(value));
+  }
+  return result;
 }

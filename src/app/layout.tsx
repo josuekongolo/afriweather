@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import Script from "next/script";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import "./globals.css";
@@ -54,6 +55,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} h-full antialiased`}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-K0KTS7G8GM"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-K0KTS7G8GM');
+          `}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col font-[var(--font-dm-sans)] bg-[var(--background)] text-[var(--foreground)]">
         {/* Schema.org Organization */}
         <script

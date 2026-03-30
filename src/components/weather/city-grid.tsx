@@ -7,9 +7,10 @@ interface CityGridProps {
   title?: string;
   showProvince?: boolean;
   weatherData?: Record<string, WeatherPreview>;
+  lang?: string;
 }
 
-export function CityGrid({ cities, title, showProvince, weatherData }: CityGridProps) {
+export function CityGrid({ cities, title, showProvince, weatherData, lang = "en" }: CityGridProps) {
   return (
     <section>
       {title && (
@@ -23,7 +24,7 @@ export function CityGrid({ cities, title, showProvince, weatherData }: CityGridP
           return (
             <Link
               key={city.slug}
-              href={`/weather/${city.country}/${city.slug}`}
+              href={`/${lang}/weather/${city.country}/${city.slug}`}
               className="group flex items-center justify-between rounded-xl bg-white border border-[var(--border-subtle)] px-4 py-3 card-lift"
             >
               <div className="flex items-center gap-3 min-w-0">

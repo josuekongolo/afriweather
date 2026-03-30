@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { getPopularCities, getCitiesByCountry } from "@/lib/cities";
 import { CityGrid } from "@/components/weather/city-grid";
 import { SearchBar } from "@/components/weather/search-bar";
@@ -9,6 +10,8 @@ import {
   type AfricaRegion,
 } from "@/lib/countries";
 import Link from "next/link";
+import { getDictionary, hasLocale } from "./dictionaries";
+import type { Locale } from "@/i18n/config";
 
 const regionIcons: Record<AfricaRegion, string> = {
   "Southern Africa":
@@ -31,17 +34,17 @@ const regionColors: Record<AfricaRegion, { from: string; to: string; accent: str
   "North Africa": { from: "from-rose-50", to: "to-pink-50", accent: "text-rose-600" },
 };
 
-function CountryCard({ country, weather }: { country: Country; weather?: WeatherPreview }) {
+function CountryCard({ country, weather, lang, countryLabel }: { country: Country; weather?: WeatherPreview; lang: string; countryLabel: string }) {
   return (
     <Link
-      href={`/${country.slug}`}
+      href={`/${lang}/${country.slug}`}
       className="group flex items-center justify-between rounded-xl bg-white border border-[var(--border-subtle)] px-3.5 py-3 card-lift"
     >
       <div className="flex items-center gap-3 min-w-0">
         <span className="text-xl shrink-0">{country.flag}</span>
         <div className="min-w-0">
           <span className="text-[13px] font-semibold text-[var(--text-primary)] group-hover:text-blue-600 transition-colors block truncate">
-            {country.name}
+            {countryLabel}
           </span>
           <span className="text-[11px] text-[var(--text-tertiary)]">
             {country.capital}
@@ -60,25 +63,31 @@ function CountryCard({ country, weather }: { country: Country; weather?: Weather
   );
 }
 
-export const revalidate = 1800; // 30 minutes
+export const revalidate = 1800;
 
-export default async function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
+
+  const dict = await getDictionary(lang);
   const popular = getPopularCities(12);
   const byRegion = getCountriesByRegion();
   const totalCountries = africanCountries.length;
   const weatherData = await fetchWeatherPreviews(popular);
 
-  // Fetch weather for each country's capital (use first/largest city as proxy)
   const capitalCities = africanCountries.map((country) => {
     const cities = getCitiesByCountry(country.slug);
-    const capital = cities[0]; // sorted by population, largest first
+    const capital = cities[0];
     return { countrySlug: country.slug, city: capital };
   }).filter((c) => c.city);
 
   const capitalWeatherData = await fetchWeatherPreviews(
     capitalCities.map((c) => c.city)
   );
-  // Map country slug -> weather (using city slug as key in the weather map)
   const countryWeather: Record<string, WeatherPreview> = {};
   for (const { countrySlug, city } of capitalCities) {
     if (capitalWeatherData[city.slug]) {
@@ -86,7 +95,6 @@ export default async function Home() {
     }
   }
 
-  // Structured Data — WebSite with SearchAction (enables Google sitelinks search box)
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -97,7 +105,7 @@ export default async function Home() {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://afriweather.io/weather?name={search_term_string}",
+        urlTemplate: "https://afriweather.io/{lang}/weather?name={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },
@@ -123,20 +131,19 @@ export default async function Home() {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-20 sm:pb-24 md:pt-24 md:pb-28 text-center">
           <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/8 border border-white/10 text-white/60 text-[11px] sm:text-[12px] font-medium tracking-wide mb-5 sm:mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            LIVE WEATHER DATA &middot; {totalCountries} AFRICAN COUNTRIES
+            {dict.home.liveWeatherData} &middot; {totalCountries} {dict.home.africanCountries}
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight mb-3 sm:mb-4 leading-[1.1]">
-            Weather in
+            {dict.home.weatherIn}
             <br />
             <span className="bg-gradient-to-r from-cyan-300 via-blue-200 to-white bg-clip-text text-transparent">
-              Africa
+              {dict.home.africa}
             </span>
           </h1>
 
           <p className="text-white/80 text-sm sm:text-base md:text-lg mb-8 sm:mb-10 max-w-md mx-auto font-medium leading-relaxed">
-            Accurate forecasts for {totalCountries} African countries. Current
-            conditions, hourly and 7-day forecasts for 5,900+ cities.
+            {dict.home.heroDescription.replace("{count}", String(totalCountries))}
           </p>
 
           <SearchBar variant="hero" />
@@ -158,24 +165,24 @@ export default async function Home() {
         <section>
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-[17px] font-bold text-[var(--text-primary)]">
-              Popular Cities
+              {dict.home.popularCities}
             </h2>
             <Link
-              href="/south-africa"
+              href={`/${lang}/south-africa`}
               className="text-[13px] text-blue-600 hover:text-blue-700 font-semibold transition-colors"
             >
-              South Africa &rarr;
+              {dict.countries["south-africa"]} &rarr;
             </Link>
           </div>
-          <CityGrid cities={popular} title="" showProvince weatherData={weatherData} />
+          <CityGrid cities={popular} title="" showProvince weatherData={weatherData} lang={lang} />
         </section>
 
         {/* Browse by Region */}
         {(Object.keys(byRegion) as AfricaRegion[]).map((region) => {
           const countries = byRegion[region];
           const colors = regionColors[region];
-
           const sectionId = region.toLowerCase().replace(/\s+/g, "-");
+          const regionLabel = dict.regions[region] || region;
 
           return (
             <section key={region} id={sectionId}>
@@ -197,16 +204,22 @@ export default async function Home() {
                 </div>
                 <div>
                   <h2 className="text-[16px] font-bold text-[var(--text-primary)]">
-                    {region}
+                    {regionLabel}
                   </h2>
                   <p className="text-[11px] text-[var(--text-tertiary)]">
-                    {countries.length} countries
+                    {dict.home.countriesCount.replace("{count}", String(countries.length))}
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                 {countries.map((country) => (
-                  <CountryCard key={country.slug} country={country} weather={countryWeather[country.slug]} />
+                  <CountryCard
+                    key={country.slug}
+                    country={country}
+                    weather={countryWeather[country.slug]}
+                    lang={lang}
+                    countryLabel={dict.countries[country.slug as keyof typeof dict.countries] || country.name}
+                  />
                 ))}
               </div>
             </section>
@@ -218,12 +231,10 @@ export default async function Home() {
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-100 px-6 py-10 max-w-2xl mx-auto">
             <p className="text-3xl mb-3">&#127757;</p>
             <h2 className="text-[18px] font-bold text-[var(--text-primary)] mb-2">
-              Weather for All of Africa
+              {dict.home.weatherForAll}
             </h2>
             <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed max-w-md mx-auto">
-              Free, ad-free weather forecasts for {totalCountries} African countries
-              and 5,900+ cities. Powered by open data from MET Norway, updated
-              every 30 minutes.
+              {dict.home.ctaDescription.replace("{count}", String(totalCountries))}
             </p>
           </div>
         </section>

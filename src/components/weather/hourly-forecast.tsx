@@ -2,16 +2,18 @@
 
 import { HourlyForecast as HourlyForecastType } from "@/lib/types";
 import { getWeatherEmoji } from "@/lib/weather";
+import { useDictionary } from "@/i18n/dictionary-provider";
 
 interface HourlyForecastProps {
   hours: HourlyForecastType[];
 }
 
 export function HourlyForecast({ hours }: HourlyForecastProps) {
+  const { dict } = useDictionary();
   return (
     <section>
       <h2 className="text-[17px] font-bold text-[var(--text-primary)] mb-4">
-        Hourly Forecast
+        {dict.weather.hourlyForecast}
       </h2>
       <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
         <div className="overflow-x-auto scrollbar-hide">
@@ -35,7 +37,7 @@ export function HourlyForecast({ hours }: HourlyForecastProps) {
                       : "text-[var(--text-tertiary)]"
                   }`}
                 >
-                  {i === 0 ? "Now" : hour.hour}
+                  {i === 0 ? dict.weather.now : hour.hour}
                 </span>
                 <span className="text-[22px] leading-none mb-2">
                   {getWeatherEmoji(hour.symbolCode)}

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { allCities } from "@/lib/cities";
 import { City } from "@/lib/types";
+import { useDictionary } from "@/i18n/dictionary-provider";
 
 interface GeoResult {
   name: string;
@@ -36,6 +37,7 @@ export function SearchBar({
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { dict, lang } = useDictionary();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
@@ -163,11 +165,11 @@ export function SearchBar({
     setIsOpen(false);
     setQuery("");
     if (result.type === "city") {
-      router.push(`/weather/${result.city.country}/${result.city.slug}`);
+      router.push(`/${lang}/weather/${result.city.country}/${result.city.slug}`);
     } else {
       const { lat, lon, name } = result.geo;
       router.push(
-        `/weather?lat=${lat}&lon=${lon}&name=${encodeURIComponent(name)}`
+        `/${lang}/weather?lat=${lat}&lon=${lon}&name=${encodeURIComponent(name)}`
       );
     }
   }
@@ -251,7 +253,7 @@ export function SearchBar({
             })}
             {isLoading && (
               <li className="px-4 py-2.5 text-[12px] text-[var(--text-tertiary)] text-center">
-                Searching more places...
+                {dict.search.searching}
               </li>
             )}
           </ul>,
@@ -289,7 +291,7 @@ export function SearchBar({
               updateDropdownPosition();
             }
           }}
-          placeholder="Search any place in Africa..."
+          placeholder={dict.search.placeholder}
           autoFocus={autoFocus}
           className={`w-full pl-11 pr-4 py-3.5 rounded-2xl text-[15px] font-medium focus:outline-none transition-all touch-manipulation ${
             isHero

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DayDetail, GraphDataPoint, DailyForecast, HourlyForecast } from "@/lib/types";
+import { useDictionary } from "@/i18n/dictionary-provider";
 import { ForecastView } from "./forecast-view";
 import { DetailsView } from "./details-view";
 import { WeatherMapView } from "./weather-map-view";
@@ -28,16 +29,16 @@ export function ForecastTabs({
   lon,
 }: ForecastTabsProps) {
   const [tab, setTab] = useState<Tab>("forecast");
+  const { dict } = useDictionary();
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "forecast", label: "Forecast" },
-    { id: "details", label: "Details" },
-    { id: "map", label: "Map" },
+    { id: "forecast", label: dict.weather.forecast },
+    { id: "details", label: dict.weather.details },
+    { id: "map", label: dict.weather.map },
   ];
 
   return (
     <div>
-      {/* Tab Bar */}
       <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl w-fit mb-6">
         {tabs.map((t) => (
           <button
@@ -54,7 +55,6 @@ export function ForecastTabs({
         ))}
       </div>
 
-      {/* Tab Content */}
       {tab === "forecast" && (
         <ForecastView daily={daily} hourly={hourly} dayDetails={dayDetails} graphData={graphData} />
       )}

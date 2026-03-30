@@ -34,7 +34,7 @@ export default function NotFound() {
       <SearchBar autoFocus />
       <div className="mt-8">
         <Link
-          href="/south-africa"
+          href="/en/south-africa"
           className="text-[13px] text-blue-600 hover:text-blue-700 font-semibold transition-colors"
         >
           Browse all South Africa cities &rarr;

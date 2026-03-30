@@ -2,17 +2,19 @@
 
 import type { DayDetail } from "@/lib/types";
 import { getWeatherEmoji, getWindDirectionLabel } from "@/lib/weather";
+import { useDictionary } from "@/i18n/dictionary-provider";
 
 interface DayDetailPanelProps {
   day: DayDetail;
 }
 
 export function DayDetailPanel({ day }: DayDetailPanelProps) {
+  const { dict } = useDictionary();
   return (
     <div className="border-t border-b border-[var(--border-subtle)] bg-slate-50/80">
       <div className="px-3 sm:px-5 py-3">
         <p className="text-[13px] font-semibold text-[var(--text-primary)] mb-3">
-          {day.dayLabel} &mdash; Hourly Breakdown
+          {day.dayLabel} &mdash; {dict.weather.hourlyBreakdown}
         </p>
 
         {/* Mobile: compact card per hour */}
@@ -32,7 +34,7 @@ export function DayDetailPanel({ day }: DayDetailPanelProps) {
                 {h.temp}&deg;
               </span>
               <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-[var(--text-tertiary)] min-w-0">
-                <span>Feels {h.feelsLike}&deg;</span>
+                <span>{dict.weather.feelsShort} {h.feelsLike}&deg;</span>
                 <span>{h.windSpeed} m/s {getWindDirectionLabel(h.windDirection)}</span>
                 <span>{h.humidity}%</span>
                 {h.precipitation > 0 && (
@@ -50,15 +52,15 @@ export function DayDetailPanel({ day }: DayDetailPanelProps) {
           <table className="w-full text-[12px]" style={{ minWidth: 600 }}>
             <thead>
               <tr className="text-[var(--text-tertiary)] font-semibold uppercase tracking-wider">
-                <th className="text-left py-1.5 pr-2">Time</th>
-                <th className="text-center py-1.5 px-1">Weather</th>
-                <th className="text-right py-1.5 px-2">Temp</th>
-                <th className="text-right py-1.5 px-2">Feels</th>
-                <th className="text-right py-1.5 px-2">Precip.</th>
-                <th className="text-right py-1.5 px-2">Wind</th>
-                <th className="text-right py-1.5 px-2">Humidity</th>
-                <th className="text-right py-1.5 px-2">Pressure</th>
-                <th className="text-right py-1.5 pl-2">Cloud</th>
+                <th className="text-left py-1.5 pr-2">{dict.weather.time}</th>
+                <th className="text-center py-1.5 px-1">{dict.weather.forecast}</th>
+                <th className="text-right py-1.5 px-2">{dict.weather.temp}</th>
+                <th className="text-right py-1.5 px-2">{dict.weather.feelsShort}</th>
+                <th className="text-right py-1.5 px-2">{dict.weather.precip}</th>
+                <th className="text-right py-1.5 px-2">{dict.weather.wind}</th>
+                <th className="text-right py-1.5 px-2">{dict.weather.humidity}</th>
+                <th className="text-right py-1.5 px-2">{dict.weather.pressure}</th>
+                <th className="text-right py-1.5 pl-2">{dict.weather.cloud}</th>
               </tr>
             </thead>
             <tbody>

@@ -12,16 +12,23 @@ import {
 } from "@/lib/weather";
 import { CurrentWeather } from "@/components/weather/current-weather";
 import { ForecastTabs } from "@/components/weather/forecast-tabs";
+import { getDictionary, hasLocale } from "../dictionaries";
 
 interface WeatherPageProps {
+  params: Promise<{ lang: string }>;
   searchParams: Promise<{ lat?: string; lon?: string; name?: string }>;
 }
 
 export async function generateMetadata({
+  params,
   searchParams,
 }: WeatherPageProps): Promise<Metadata> {
+  const { lang } = await params;
   const { lat, lon, name } = await searchParams;
-  if (!lat || !lon) return { title: "Weather — AfriWeather" };
+  if (!hasLocale(lang)) return {};
+  const dict = await getDictionary(lang);
+
+  if (!lat || !lon) return { title: `${dict.weather.forecast} — AfriWeather` };
 
   const placeName = name || `${lat}, ${lon}`;
   let temp = "";
@@ -33,22 +40,24 @@ export async function generateMetadata({
   } catch {}
 
   return {
-    title: `${placeName} Weather${temp ? ` ${temp}` : ""} — Today's Forecast`,
-    description: `Current weather in ${placeName}. Hourly and 7-day forecast updated every 30 minutes.`,
+    title: `${placeName} ${dict.weather.forecast}${temp ? ` ${temp}` : ""} — ${dict.city.todaysForecast}`,
+    description: `${dict.city.weatherInToday.replace("{city}", placeName)}`,
     robots: { index: false, follow: true },
   };
 }
 
-export default async function WeatherPage({ searchParams }: WeatherPageProps) {
+export default async function WeatherPage({ params, searchParams }: WeatherPageProps) {
+  const { lang } = await params;
   const { lat: latStr, lon: lonStr, name } = await searchParams;
 
+  if (!hasLocale(lang)) notFound();
   if (!latStr || !lonStr) notFound();
 
   const lat = parseFloat(latStr);
   const lon = parseFloat(lonStr);
-
   if (isNaN(lat) || isNaN(lon)) notFound();
 
+  const dict = await getDictionary(lang);
   const placeName = name ? decodeURIComponent(name) : `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
 
   const data = await fetchWeather(lat, lon);
@@ -64,7 +73,6 @@ export default async function WeatherPage({ searchParams }: WeatherPageProps) {
 
   return (
     <div>
-      {/* Atmospheric hero */}
       <section
         className={`atmosphere grain relative bg-gradient-to-br ${gradient} overflow-hidden`}
       >
@@ -87,34 +95,24 @@ export default async function WeatherPage({ searchParams }: WeatherPageProps) {
           lon={lon}
         />
 
-        {/* About section */}
         <section>
           <h2 className="text-[17px] font-bold text-[var(--text-primary)] mb-4">
-            Weather in {placeName} Today
+            {dict.city.weatherInToday.replace("{city}", placeName)}
           </h2>
           <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5 sm:p-6 space-y-4">
             <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
-              {placeName} is located at coordinates {Math.abs(lat).toFixed(2)}&deg;{lat < 0 ? "S" : "N"},{" "}
-              {Math.abs(lon).toFixed(2)}&deg;{lon < 0 ? "W" : "E"}. Right now the weather
-              shows {current.description.toLowerCase()} with a temperature of{" "}
-              {current.temperature}&deg;C, feeling like {current.feelsLike}&deg;C.
-            </p>
-            <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed">
-              Today&apos;s forecast shows temperatures from {daily[0]?.tempMin}&deg;C
-              to {daily[0]?.tempMax}&deg;C. Humidity is at {current.humidity}% with
-              winds at {current.windSpeed} km/h. Pressure is {current.pressure} hPa
-              with {current.cloudCover}% cloud cover.
+              {placeName} — {Math.abs(lat).toFixed(2)}&deg;{lat < 0 ? "S" : "N"},{" "}
+              {Math.abs(lon).toFixed(2)}&deg;{lon < 0 ? "W" : "E"}. {current.description}, {current.temperature}&deg;C ({dict.weather.feelsLike.toLowerCase()} {current.feelsLike}&deg;C).
             </p>
           </div>
         </section>
 
-        {/* Breadcrumb nav */}
         <nav
           className="flex items-center gap-2 text-[13px] text-[var(--text-tertiary)] pt-4 border-t border-[var(--border-subtle)]"
           aria-label="Breadcrumb"
         >
-          <Link href="/" className="hover:text-[var(--text-primary)] transition-colors">
-            Home
+          <Link href={`/${lang}`} className="hover:text-[var(--text-primary)] transition-colors">
+            {dict.breadcrumb.home}
           </Link>
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

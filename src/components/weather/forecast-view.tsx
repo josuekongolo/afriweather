@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { DailyForecast, HourlyForecast, DayDetail, GraphDataPoint } from "@/lib/types";
 import { getWeatherEmoji } from "@/lib/weather";
+import { useDictionary } from "@/i18n/dictionary-provider";
 import { HourlyForecast as HourlyStrip } from "./hourly-forecast";
 import { DayDetailPanel } from "./day-detail-panel";
 import { WeatherGraph } from "./weather-graph";
@@ -17,6 +18,7 @@ interface ForecastViewProps {
 export function ForecastView({ daily, hourly, dayDetails, graphData }: ForecastViewProps) {
   const [mode, setMode] = useState<"table" | "graph">("table");
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
+  const { dict } = useDictionary();
 
   const allTemps = daily.flatMap((d) => [d.tempMax, d.tempMin]);
   const globalMin = Math.min(...allTemps);
@@ -30,7 +32,7 @@ export function ForecastView({ daily, hourly, dayDetails, graphData }: ForecastV
       {/* Table / Graph Toggle */}
       <div className="flex items-center justify-between">
         <h2 className="text-[17px] font-bold text-[var(--text-primary)]">
-          7-Day Forecast
+          {dict.weather.sevenDayForecast}
         </h2>
         <div className="flex items-center gap-1 p-0.5 bg-gray-100 rounded-lg">
           <button
@@ -41,7 +43,7 @@ export function ForecastView({ daily, hourly, dayDetails, graphData }: ForecastV
                 : "text-[var(--text-tertiary)]"
             }`}
           >
-            Table
+            {dict.weather.table}
           </button>
           <button
             onClick={() => setMode("graph")}
@@ -51,7 +53,7 @@ export function ForecastView({ daily, hourly, dayDetails, graphData }: ForecastV
                 : "text-[var(--text-tertiary)]"
             }`}
           >
-            Graph
+            {dict.weather.graph}
           </button>
         </div>
       </div>
@@ -60,13 +62,13 @@ export function ForecastView({ daily, hourly, dayDetails, graphData }: ForecastV
         <div className="bg-white rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
           {/* Column headers — desktop only */}
           <div className="hidden sm:grid grid-cols-[80px_32px_80px_80px_1fr_48px_48px] gap-2 px-5 py-2 text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider border-b border-[var(--border-subtle)]">
-            <span>Day</span>
+            <span>{dict.weather.day}</span>
             <span />
-            <span className="text-center">Night / Morn</span>
-            <span className="text-center">Aftn / Eve</span>
-            <span className="text-center">Temperature</span>
-            <span className="text-right">Rain</span>
-            <span className="text-right">Wind</span>
+            <span className="text-center">{dict.weather.nightMorn}</span>
+            <span className="text-center">{dict.weather.aftnEve}</span>
+            <span className="text-center">{dict.weather.temperature}</span>
+            <span className="text-right">{dict.weather.rain}</span>
+            <span className="text-right">{dict.weather.wind}</span>
           </div>
 
           {daily.map((day, i) => {

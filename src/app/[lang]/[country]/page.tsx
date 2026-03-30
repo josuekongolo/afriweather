@@ -5,8 +5,10 @@ import { getCitiesByCountry, getCitiesByProvince } from "@/lib/cities";
 import { africanCountries } from "@/lib/countries";
 import { fetchWeatherPreviews, type WeatherPreview } from "@/lib/weather";
 import { SearchBar } from "@/components/weather/search-bar";
+import { getDictionary, hasLocale } from "../dictionaries";
+import { locales } from "@/i18n/config";
 
-export const revalidate = 1800; // 30 minutes
+export const revalidate = 1800;
 
 export function generateStaticParams() {
   return africanCountries.map((c) => ({ country: c.slug }));
@@ -15,24 +17,33 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ country: string }>;
+  params: Promise<{ lang: string; country: string }>;
 }): Promise<Metadata> {
-  const { country: slug } = await params;
-  const country = africanCountries.find((c) => c.slug === slug);
-  if (!country) return { title: "Country Not Found" };
+  const { lang, country: slug } = await params;
+  if (!hasLocale(lang)) return {};
 
+  const dict = await getDictionary(lang);
+  const country = africanCountries.find((c) => c.slug === slug);
+  if (!country) return { title: dict.notFound.title };
+
+  const countryName = dict.countries[slug as keyof typeof dict.countries] || country.name;
   const cities = getCitiesByCountry(slug);
 
   return {
-    title: `${country.name} Weather — All Cities & Regions`,
-    description: `Weather forecasts for ${cities.length} cities in ${country.name}. Browse by region with hourly and 7-day forecasts. Free, ad-free, updated every 30 minutes.`,
-    alternates: { canonical: `/${country.slug}` },
+    title: `${dict.country.weather.replace("{country}", countryName)} — ${dict.country.allCitiesRegions}`,
+    description: `${countryName}: ${cities.length} cities.`,
+    alternates: {
+      canonical: `/${lang}/${country.slug}`,
+      languages: Object.fromEntries(
+        locales.map((l) => [l, `/${l}/${country.slug}`])
+      ),
+    },
     openGraph: {
-      title: `Weather in ${country.name} ${country.flag}`,
-      description: `Accurate weather for ${cities.length}+ cities in ${country.name}. Current conditions, hourly and 7-day forecasts.`,
+      title: `${dict.country.weather.replace("{country}", countryName)} ${country.flag}`,
+      description: `${countryName}: ${cities.length}+ cities.`,
       type: "website",
       siteName: "AfriWeather",
-      images: [{ url: "/og-image.jpeg", width: 2048, height: 1152, alt: `Weather in ${country.name}` }],
+      images: [{ url: "/og-image.jpeg", width: 2048, height: 1152, alt: countryName }],
     },
   };
 }
@@ -40,25 +51,28 @@ export async function generateMetadata({
 export default async function CountryPage({
   params,
 }: {
-  params: Promise<{ country: string }>;
+  params: Promise<{ lang: string; country: string }>;
 }) {
-  const { country: slug } = await params;
+  const { lang, country: slug } = await params;
+  if (!hasLocale(lang)) notFound();
+
+  const dict = await getDictionary(lang);
   const country = africanCountries.find((c) => c.slug === slug);
   if (!country) notFound();
 
+  const countryName = dict.countries[slug as keyof typeof dict.countries] || country.name;
   const byProvince = getCitiesByProvince(slug);
   const provinces = Object.keys(byProvince).sort();
   const allCitiesInCountry = Object.values(byProvince).flat();
   const totalCities = allCitiesInCountry.length;
   const weatherData = await fetchWeatherPreviews(allCitiesInCountry);
 
-  // Structured Data — BreadcrumbList
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://afriweather.io" },
-      { "@type": "ListItem", position: 2, name: `${country.name} Weather`, item: `https://afriweather.io/${country.slug}` },
+      { "@type": "ListItem", position: 2, name: `${country.name} Weather`, item: `https://afriweather.io/${lang}/${country.slug}` },
     ],
   };
 
@@ -69,7 +83,6 @@ export default async function CountryPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      {/* Hero */}
       <section className="atmosphere relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
@@ -80,21 +93,23 @@ export default async function CountryPage({
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-12 sm:pt-14 sm:pb-16 md:pt-16 md:pb-18">
           <nav className="flex items-center gap-1.5 text-[12px] sm:text-[13px] text-white/40 mb-4 sm:mb-6">
-            <Link href="/" className="hover:text-white/70 transition-colors">
-              Home
+            <Link href={`/${lang}`} className="hover:text-white/70 transition-colors">
+              {dict.breadcrumb.home}
             </Link>
             <span>/</span>
-            <span className="text-white/70">{country.name}</span>
+            <span className="text-white/70">{countryName}</span>
           </nav>
 
           <div className="flex items-center gap-2.5 sm:gap-3 mb-2">
             <span className="text-2xl sm:text-3xl">{country.flag}</span>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
-              {country.name} Weather
+              {dict.country.weather.replace("{country}", countryName)}
             </h1>
           </div>
           <p className="text-white/50 text-sm sm:text-base font-medium mb-6 sm:mb-8">
-            {totalCities} cities across {provinces.length} regions
+            {dict.country.citiesAcrossRegions
+              .replace("{cities}", String(totalCities))
+              .replace("{regions}", String(provinces.length))}
           </p>
           <SearchBar variant="hero" />
         </div>
@@ -117,7 +132,7 @@ export default async function CountryPage({
                 return (
                   <Link
                     key={city.slug}
-                    href={`/weather/${slug}/${city.slug}`}
+                    href={`/${lang}/weather/${slug}/${city.slug}`}
                     className="group flex items-center justify-between rounded-xl bg-white border border-[var(--border-subtle)] px-3.5 py-3 card-lift"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">

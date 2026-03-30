@@ -1,4 +1,7 @@
+"use client";
+
 import { getWeatherEmoji, getWindDirectionLabel } from "@/lib/weather";
+import { useDictionary } from "@/i18n/dictionary-provider";
 
 interface CurrentWeatherProps {
   temperature: number;
@@ -31,16 +34,17 @@ export function CurrentWeather({
   timezone = "Africa/Johannesburg",
   updatedAt,
 }: CurrentWeatherProps) {
+  const { dict, lang } = useDictionary();
   const emoji = getWeatherEmoji(symbolCode);
   const windDir = getWindDirectionLabel(windDirection);
-  const updateTime = new Date(updatedAt).toLocaleTimeString("en-ZA", {
+  const updateTime = new Date(updatedAt).toLocaleTimeString(lang, {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
     timeZone: timezone,
   });
   const tzAbbr = new Date(updatedAt)
-    .toLocaleTimeString("en-ZA", { timeZoneName: "short", timeZone: timezone })
+    .toLocaleTimeString(lang, { timeZoneName: "short", timeZone: timezone })
     .split(" ")
     .pop() || "";
 
@@ -55,7 +59,7 @@ export function CurrentWeather({
             {cityName}
           </h1>
           <p className="text-white/50 text-[13px] sm:text-sm font-medium mb-4 sm:mb-6">
-            {countryName || "Africa"} &middot; Updated {updateTime} {tzAbbr}
+            {countryName || "Africa"} &middot; {dict.weather.updated} {updateTime} {tzAbbr}
           </p>
           <div className="flex items-baseline gap-2 sm:gap-3">
             <span className="text-[64px] sm:text-[80px] md:text-[100px] font-bold leading-none tracking-tighter">
@@ -68,7 +72,7 @@ export function CurrentWeather({
               {description}
             </span>
             <span className="text-[13px] sm:text-sm text-white/40">
-              Feels like {feelsLike}°C
+              {dict.weather.feelsLike} {feelsLike}°C
             </span>
           </div>
         </div>
@@ -92,7 +96,7 @@ export function CurrentWeather({
               />
             </svg>
           }
-          label="Humidity"
+          label={dict.weather.humidity}
           value={`${humidity}%`}
         />
         <GlassCard
@@ -111,7 +115,7 @@ export function CurrentWeather({
               />
             </svg>
           }
-          label="Wind"
+          label={dict.weather.wind}
           value={`${windSpeed} km/h ${windDir}`}
         />
         <GlassCard
@@ -130,7 +134,7 @@ export function CurrentWeather({
               />
             </svg>
           }
-          label="Pressure"
+          label={dict.weather.pressure}
           value={`${pressure} hPa`}
         />
         <GlassCard
@@ -149,7 +153,7 @@ export function CurrentWeather({
               />
             </svg>
           }
-          label="Cloud Cover"
+          label={dict.weather.cloudCover}
           value={`${cloudCover}%`}
         />
       </div>

@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import type { GraphDataPoint } from "@/lib/types";
+import { useDictionary } from "@/i18n/dictionary-provider";
 
 interface WeatherGraphProps {
   data: GraphDataPoint[];
@@ -53,12 +54,13 @@ function ChartShell({
 }
 
 export function WeatherGraph({ data, variant }: WeatherGraphProps) {
+  const { dict } = useDictionary();
   const xInterval = Math.max(Math.floor(data.length / 10), 1);
 
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Temperature + Precipitation */}
-      <ChartShell label="Temperature & Precipitation" height={220}>
+      <ChartShell label={dict.graph.tempAndPrecip} height={220}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
@@ -94,9 +96,9 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
               contentStyle={tooltipStyle}
               formatter={(value, name) => {
                 const v = Number(value);
-                if (name === "temp") return [`${v}°C`, "Temp"];
-                if (name === "dewPoint") return [`${v}°C`, "Dew Pt"];
-                if (name === "precipitation") return [`${v} mm`, "Rain"];
+                if (name === "temp") return [`${v}°C`, dict.graph.tempLabel];
+                if (name === "dewPoint") return [`${v}°C`, dict.graph.dewPtLabel];
+                if (name === "precipitation") return [`${v} mm`, dict.graph.rainLabel];
                 return [`${v}`, String(name)];
               }}
             />
@@ -134,7 +136,7 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
       </ChartShell>
 
       {/* Wind */}
-      <ChartShell label="Wind Speed" height={150}>
+      <ChartShell label={dict.graph.windSpeed} height={150}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
@@ -156,7 +158,7 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(value) => [`${Number(value)} m/s`, "Wind"]}
+              formatter={(value) => [`${Number(value)} m/s`, dict.graph.windLabel]}
             />
             <Line
               type="monotone"
@@ -172,7 +174,7 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
 
       {/* Pressure — detailed only */}
       {variant === "detailed" && (
-        <ChartShell label="Atmospheric Pressure" height={150}>
+        <ChartShell label={dict.graph.atmosphericPressure} height={150}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data}
@@ -195,7 +197,7 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
               />
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(value) => [`${Number(value)} hPa`, "Pressure"]}
+                formatter={(value) => [`${Number(value)} hPa`, dict.graph.pressureLabel]}
               />
               <Line
                 type="monotone"
@@ -212,7 +214,7 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
 
       {/* Humidity — detailed only */}
       {variant === "detailed" && (
-        <ChartShell label="Humidity" height={150}>
+        <ChartShell label={dict.graph.humidity} height={150}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data}
@@ -236,7 +238,7 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
               />
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(value) => [`${Number(value)}%`, "Humidity"]}
+                formatter={(value) => [`${Number(value)}%`, dict.graph.humidityLabel]}
               />
               <Line
                 type="monotone"
@@ -255,29 +257,29 @@ export function WeatherGraph({ data, variant }: WeatherGraphProps) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-[11px] text-[var(--text-tertiary)]">
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 bg-red-500 rounded-full inline-block" />
-          Temperature &deg;C
+          {dict.graph.tempC}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-2.5 bg-blue-500/60 rounded-sm inline-block" />
-          Precipitation mm
+          {dict.graph.precipMm}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-0.5 bg-violet-500 rounded-full inline-block" />
-          Wind m/s
+          {dict.graph.windMs}
         </span>
         {variant === "detailed" && (
           <>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-0.5 bg-emerald-500 rounded-full inline-block" />
-              Pressure hPa
+              {dict.graph.pressureHpa}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-0.5 bg-cyan-500 rounded-full inline-block" />
-              Humidity %
+              {dict.graph.humidityPercent}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-0.5 bg-gray-800/40 rounded-full inline-block border-dashed" />
-              Dew Point &deg;C
+              {dict.graph.dewPointC}
             </span>
           </>
         )}

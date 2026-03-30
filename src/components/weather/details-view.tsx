@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { DayDetail, GraphDataPoint } from "@/lib/types";
 import { getWeatherEmoji, getWindDirectionLabel } from "@/lib/weather";
+import { useDictionary } from "@/i18n/dictionary-provider";
 import { WeatherGraph } from "./weather-graph";
 
 interface DetailsViewProps {
@@ -25,13 +26,14 @@ function UvBadge({ uv }: { uv: number }) {
 
 export function DetailsView({ dayDetails, graphData }: DetailsViewProps) {
   const [mode, setMode] = useState<"table" | "graph">("table");
+  const { dict } = useDictionary();
 
   return (
     <div className="space-y-6">
       {/* Toggle */}
       <div className="flex items-center justify-between">
         <h2 className="text-[17px] font-bold text-[var(--text-primary)]">
-          Detailed Forecast
+          {dict.weather.detailedForecast}
         </h2>
         <div className="flex items-center gap-1 p-0.5 bg-gray-100 rounded-lg">
           <button
@@ -42,7 +44,7 @@ export function DetailsView({ dayDetails, graphData }: DetailsViewProps) {
                 : "text-[var(--text-tertiary)]"
             }`}
           >
-            Table
+            {dict.weather.table}
           </button>
           <button
             onClick={() => setMode("graph")}
@@ -52,7 +54,7 @@ export function DetailsView({ dayDetails, graphData }: DetailsViewProps) {
                 : "text-[var(--text-tertiary)]"
             }`}
           >
-            Graph
+            {dict.weather.graph}
           </button>
         </div>
       </div>
@@ -89,7 +91,7 @@ export function DetailsView({ dayDetails, graphData }: DetailsViewProps) {
                         {h.temp}&deg;
                       </span>
                       <span className="text-[11px] text-[var(--text-tertiary)] tabular-nums">
-                        feels {h.feelsLike}&deg;
+                        {dict.weather.feelsShort} {h.feelsLike}&deg;
                       </span>
                       {h.precipitation > 0 && (
                         <span className="text-[11px] font-semibold text-blue-600 ml-auto tabular-nums">
@@ -99,12 +101,12 @@ export function DetailsView({ dayDetails, graphData }: DetailsViewProps) {
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-[var(--text-tertiary)]">
                       <span>
-                        Wind {h.windSpeed} m/s {getWindDirectionLabel(h.windDirection)}
+                        {dict.weather.wind} {h.windSpeed} m/s {getWindDirectionLabel(h.windDirection)}
                       </span>
-                      <span>Humidity {h.humidity}%</span>
+                      <span>{dict.weather.humidity} {h.humidity}%</span>
                       <span>{h.pressure} hPa</span>
-                      <span>Cloud {h.cloudCover}%</span>
-                      <span>Dew {h.dewPoint}&deg;</span>
+                      <span>{dict.weather.cloud} {h.cloudCover}%</span>
+                      <span>{dict.weather.dew} {h.dewPoint}&deg;</span>
                       <span>
                         UV <UvBadge uv={h.uvIndex} />
                       </span>
@@ -119,17 +121,17 @@ export function DetailsView({ dayDetails, graphData }: DetailsViewProps) {
                   <table className="w-full text-[12px]" style={{ minWidth: 800 }}>
                     <thead>
                       <tr className="text-[var(--text-tertiary)] text-[11px] font-semibold uppercase tracking-wider border-b border-[var(--border-subtle)]">
-                        <th className="text-left py-2.5 px-4">Time</th>
-                        <th className="text-center py-2.5 px-2">Weather</th>
-                        <th className="text-right py-2.5 px-2">Temp.</th>
-                        <th className="text-right py-2.5 px-2">Feels like</th>
-                        <th className="text-right py-2.5 px-2">Dew point</th>
-                        <th className="text-right py-2.5 px-2">Precip. mm</th>
-                        <th className="text-right py-2.5 px-2">Wind m/s</th>
-                        <th className="text-right py-2.5 px-2">Pressure hPa</th>
-                        <th className="text-right py-2.5 px-2">Humidity %</th>
-                        <th className="text-right py-2.5 px-2">Cloud %</th>
-                        <th className="text-right py-2.5 px-4">UV</th>
+                        <th className="text-left py-2.5 px-4">{dict.weather.time}</th>
+                        <th className="text-center py-2.5 px-2">{dict.weather.forecast}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.temp}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.feelsShort}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.dewPoint}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.precipMm}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.windMs}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.pressureHpa}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.humidityPercent}</th>
+                        <th className="text-right py-2.5 px-2">{dict.weather.cloudPercent}</th>
+                        <th className="text-right py-2.5 px-4">{dict.weather.uv}</th>
                       </tr>
                     </thead>
                     <tbody>

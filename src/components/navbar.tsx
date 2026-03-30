@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { regions, type AfricaRegion } from "@/lib/countries";
+import { locales, localeNames, type Locale } from "@/i18n/config";
+import type { Dictionary } from "@/app/[lang]/dictionaries";
 
-// Top countries per region (highest population, most searched)
 const regionCountries: Record<AfricaRegion, { name: string; slug: string }[]> = {
   "Southern Africa": [
     { name: "South Africa", slug: "south-africa" },
@@ -48,28 +49,48 @@ const regionCountries: Record<AfricaRegion, { name: string; slug: string }[]> = 
   ],
 };
 
-export function Navbar() {
+interface NavbarProps {
+  lang: Locale;
+  dict: Dictionary;
+}
+
+export function Navbar({ lang, dict }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
+    setLangOpen(false);
   }, [pathname]);
+
+  // Build locale-switched URL: replace the current locale prefix with the new one
+  function switchLocaleUrl(newLocale: string) {
+    // pathname looks like /en/... or /fr/...
+    const segments = pathname.split("/");
+    segments[1] = newLocale;
+    return segments.join("/");
+  }
+
+  const getCountryName = (slug: string) =>
+    dict.countries[slug as keyof typeof dict.countries] || slug;
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--border-subtle)]">
@@ -79,7 +100,7 @@ export function Navbar() {
       >
         {/* Logo */}
         <Link
-          href="/"
+          href={`/${lang}`}
           className="flex items-center gap-2.5 shrink-0"
           aria-label="AfriWeather — Home"
         >
@@ -109,7 +130,7 @@ export function Navbar() {
               aria-expanded={dropdownOpen}
               aria-haspopup="true"
             >
-              Countries
+              {dict.nav.countries}
               <svg
                 className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
                 fill="none"
@@ -126,23 +147,23 @@ export function Navbar() {
                 role="menu"
               >
                 {regions.map((region) => (
-                  <div key={region} role="group" aria-label={region}>
+                  <div key={region} role="group" aria-label={dict.regions[region] || region}>
                     <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
-                      {region}
+                      {dict.regions[region] || region}
                     </p>
                     <ul className="space-y-0.5">
                       {regionCountries[region].map((c) => (
                         <li key={c.slug}>
                           <Link
-                            href={`/${c.slug}`}
+                            href={`/${lang}/${c.slug}`}
                             className={`block px-2 py-1.5 text-[13px] rounded-md transition-colors ${
-                              pathname === `/${c.slug}`
+                              pathname === `/${lang}/${c.slug}`
                                 ? "bg-blue-50 text-blue-700 font-semibold"
                                 : "text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)]"
                             }`}
                             role="menuitem"
                           >
-                            {c.name}
+                            {getCountryName(c.slug)}
                           </Link>
                         </li>
                       ))}
@@ -155,45 +176,77 @@ export function Navbar() {
 
           {/* Top country quick links */}
           <Link
-            href="/south-africa"
+            href={`/${lang}/south-africa`}
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
-              pathname.startsWith("/south-africa")
+              pathname.startsWith(`/${lang}/south-africa`)
                 ? "bg-blue-50 text-blue-700"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-50"
             }`}
           >
-            South Africa
+            {getCountryName("south-africa")}
           </Link>
           <Link
-            href="/nigeria"
+            href={`/${lang}/nigeria`}
             className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
-              pathname.startsWith("/nigeria")
+              pathname.startsWith(`/${lang}/nigeria`)
                 ? "bg-blue-50 text-blue-700"
                 : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-gray-50"
             }`}
           >
-            Nigeria
+            {getCountryName("nigeria")}
           </Link>
           <Link
-            href="/kenya"
+            href={`/${lang}/kenya`}
             className={`hidden lg:block px-3 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
-              pathname.startsWith("/kenya")
+              pathname.startsWith(`/${lang}/kenya`)
                 ? "bg-blue-50 text-blue-700"
                 : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-gray-50"
             }`}
           >
-            Kenya
+            {getCountryName("kenya")}
           </Link>
           <Link
-            href="/egypt"
+            href={`/${lang}/egypt`}
             className={`hidden lg:block px-3 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
-              pathname.startsWith("/egypt")
+              pathname.startsWith(`/${lang}/egypt`)
                 ? "bg-blue-50 text-blue-700"
                 : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-gray-50"
             }`}
           >
-            Egypt
+            {getCountryName("egypt")}
           </Link>
+
+          {/* Language switcher */}
+          <div ref={langRef} className="relative ml-2">
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-gray-50 transition-all"
+              aria-label="Change language"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+              </svg>
+              <span className="uppercase text-xs">{lang}</span>
+            </button>
+
+            {langOpen && (
+              <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-[var(--border)] rounded-xl shadow-xl shadow-black/8 overflow-hidden">
+                {locales.map((l) => (
+                  <Link
+                    key={l}
+                    href={switchLocaleUrl(l)}
+                    className={`block px-4 py-2.5 text-[13px] transition-colors ${
+                      l === lang
+                        ? "bg-blue-50 text-blue-700 font-semibold"
+                        : "text-[var(--text-secondary)] hover:bg-gray-50"
+                    }`}
+                  >
+                    {localeNames[l]}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mobile hamburger */}
@@ -201,7 +254,7 @@ export function Navbar() {
           className="md:hidden p-2.5 -mr-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:text-[var(--text-primary)] transition-colors touch-manipulation"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-label={mobileOpen ? dict.nav.closeMenu : dict.nav.openMenu}
         >
           {mobileOpen ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,23 +272,40 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-[var(--border-subtle)] bg-white max-h-[70vh] overflow-y-auto">
           <div className="px-4 py-4 space-y-4">
+            {/* Language switcher - mobile */}
+            <div className="flex flex-wrap gap-1.5 pb-3 border-b border-[var(--border-subtle)]">
+              {locales.map((l) => (
+                <Link
+                  key={l}
+                  href={switchLocaleUrl(l)}
+                  className={`px-3 py-1.5 text-[13px] font-medium rounded-lg transition-colors ${
+                    l === lang
+                      ? "bg-blue-50 text-blue-700 font-semibold"
+                      : "text-[var(--text-secondary)] bg-gray-50"
+                  }`}
+                >
+                  {localeNames[l]}
+                </Link>
+              ))}
+            </div>
+
             {regions.map((region) => (
               <div key={region}>
                 <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5 px-2">
-                  {region}
+                  {dict.regions[region] || region}
                 </p>
                 <div className="grid grid-cols-2 gap-0.5">
                   {regionCountries[region].map((c) => (
                     <Link
                       key={c.slug}
-                      href={`/${c.slug}`}
+                      href={`/${lang}/${c.slug}`}
                       className={`px-3 py-2.5 text-[14px] rounded-lg transition-colors touch-manipulation ${
-                        pathname === `/${c.slug}`
+                        pathname === `/${lang}/${c.slug}`
                           ? "bg-blue-50 text-blue-700 font-semibold"
                           : "text-[var(--text-secondary)] active:bg-gray-50"
                       }`}
                     >
-                      {c.name}
+                      {getCountryName(c.slug)}
                     </Link>
                   ))}
                 </div>
